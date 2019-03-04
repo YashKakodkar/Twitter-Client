@@ -18,7 +18,7 @@ class HomeTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadTweets()
+        
 
         myRefreshControl.addTarget(self, action: #selector(loadTweets), for: .valueChanged)
         tableView.refreshControl = myRefreshControl
@@ -27,6 +27,11 @@ class HomeTableViewController: UITableViewController {
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        loadTweets()
     }
     
     @objc func loadTweets(){
@@ -94,14 +99,25 @@ class HomeTableViewController: UITableViewController {
         cell.nameLabel.text = user["name"] as? String
         cell.tweetContent.text = tweetArray[indexPath.row]["text"] as? String
         
-        let imageUrl = URL(string: (user["profile_image_url_https"] as? String)!)
+        let imageString = user["profile_image_url_https"] as? String
+        let bigImage = imageString?.replacingOccurrences(of: "_normal.jpg", with: "_bigger.jpg")
+        let imageUrl = URL(string: bigImage!)
+        print("PI URL: \(String(describing: user["profile_image_url_https"] as? String))")
         let data = try? Data(contentsOf: imageUrl!)
         
         if let imageData = data {
             cell.profileImageView.image = UIImage(data: imageData)
         }
         
+        cell.setHeart(isHearted: tweetArray[indexPath.row]["favorited"] as! Bool)
+        cell.tweetId = tweetArray[indexPath.row]["id"] as! Int
+        cell.setRetweet(tweetArray[indexPath.row]["retweeted"] as! Bool)
         
+        let favCount = tweetArray[indexPath.row]["favorite_count"] as! Int
+        let retweetCount = tweetArray[indexPath.row]["retweet_count"] as! Int
+        
+        cell.retweetCountLabel.text = "\(retweetCount)"
+        cell.favoriteCountLabel.text = "\(favCount)"
         
         return cell
         
